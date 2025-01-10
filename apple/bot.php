@@ -3,7 +3,6 @@
 $content = file_get_contents("php://input");
 $update = json_decode($content, true);
 
-// Überprüfen, ob eine Nachricht empfangen wurde
 if (isset($update["message"])) {
     $chat_id = $update["message"]["chat"]["id"];
     $message = $update["message"]["text"];
@@ -14,30 +13,22 @@ if (isset($update["message"])) {
     $last_name = $update["message"]["from"]["last_name"] ?? '';
     $username = $update["message"]["from"]["username"] ?? '';
 
-    // Debugging: Ausgabe der Benutzerdaten
-    error_log("Telegram ID: $telegram_id");
-    error_log("First Name: $first_name");
-    error_log("Last Name: $last_name");
-    error_log("Username: $username");
+    // Daten speichern
+    $userData = [
+        'telegram_id' => $telegram_id,
+        'first_name' => $first_name,
+        'last_name' => $last_name,
+        'username' => $username,
+    ];
 
-    // Start-Nachricht
+    file_put_contents('user_data.json', json_encode($userData));
+
+    // Antwort an den Benutzer
     if ($message == "/start") {
-        $welcomeMessage = "Welcome, $first_name! Your Telegram ID is $telegram_id.";
-        sendMessage($chat_id, $welcomeMessage);
-    }
-
-    // Antwort mit den Benutzerdaten
-    if ($message == "/info") {
-        $infoMessage = "Here are your details:\n";
-        $infoMessage .= "Telegram ID: $telegram_id\n";
-        $infoMessage .= "First Name: $first_name\n";
-        $infoMessage .= "Last Name: $last_name\n";
-        $infoMessage .= "Username: @$username";
-        sendMessage($chat_id, $infoMessage);
+        sendMessage($chat_id, "Hello $first_name! Your data has been saved.");
     }
 }
 
-// Funktion, um Nachrichten an Telegram zu senden
 function sendMessage($chat_id, $message) {
     $apiToken = "7726877860:AAEP-im4Iw1E1FoamynQUuRdDBgyk5Yrnrg";
     $url = "https://api.telegram.org/bot$apiToken/sendMessage?chat_id=$chat_id&text=" . urlencode($message);
